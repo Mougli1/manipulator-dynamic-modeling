@@ -360,8 +360,8 @@ def compute_tau_for_sample(mm: int) -> sp.Matrix:
         expr = sp.simplify(expr)
 
         # 4) Optionnel : arrondir proprement les coefficients
-        expr = sp.nsimplify(expr, [*vars_poly], rational=True)
-
+       # expr = sp.nsimplify(expr, [*vars_poly], rational=True)
+        expr = sp.N(expr, 6)
         tau_mm_simpl[i] = expr
 
     return tau_mm_simpl
