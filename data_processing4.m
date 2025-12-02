@@ -1,30 +1,24 @@
+%% Data Processing 4 Dof Robot -- Merbouche Mouloud & Tso Célia 
 clear
 close all 
 clc
 
 load('Data-20251124/q.mat');   
-load('Data-20251124/tau.mat');  % contient Tau
+load('Data-20251124/tau.mat'); 
 
-
-q4   = q_meas(1:4, :);   % positions des 4 premiers axes
-Tau4 = Tau(1:4, :);      % couples des 4 premiers axes
+q4   = q_meas(1:4, :);   
+Tau4 = Tau(1:4, :);      
 
 %% Conversion des unités
-% Joints 1, 2 et 4 : degrés -> radians
-% Joint 3 : millimètres -> mètres
-
 q_conv = q4;                            
+q_conv([1 2 4], :) = deg2rad(q4([1 2 4], :));  
+q_conv(3, :)       = q4(3, :) / 1000;          
 
-q_conv([1 2 4], :) = deg2rad(q4([1 2 4], :));  %
-q_conv(3, :)       = q4(3, :) / 1000;          % 3 en m
-
-%% Paramètres du filtre passe-bas
-fc = 10;          % fréquence de coupure (Hz)
-fe = 1000;        % fréquence d'échantillonnage (Hz)
-Wn = 2 * fc / fe; % fréquence normalisée
+fc = 10;          
+fe = 1000;       
+Wn = 2 * fc / fe;
 [b, a] = butter(1, Wn); 
 
-%% Dimensions
 [n_joints, n_samples] = size(q_conv);
 
 %% Initialisation
@@ -56,7 +50,7 @@ for i = 1:n_joints
 end
 
 
-save("q_conv.mat", "q_conv");   % q après conversion d'unités
+save("q_conv.mat", "q_conv");   
 save("qf.mat",     "qf");
 save("dqf.mat",    "dqf");
 save("ddqf.mat",   "ddqf");

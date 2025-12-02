@@ -1,4 +1,4 @@
-%% Code workshop 4 
+%% Code Workshop 4 -- TSO Célia et MERBOUCHE Mouloud %%
 
 close all
 clc
@@ -66,7 +66,7 @@ end
 
 tau_id = sym(zeros(n,nn));
 
-for mm = 1:10
+for mm = 1:nn
 %for mm = 1:10 si pas réussi a faire l'optimisation
 mm
 th(1) = q_sub(1,mm);
