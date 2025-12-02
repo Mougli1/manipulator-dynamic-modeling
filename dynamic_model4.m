@@ -1,3 +1,5 @@
+%% Code workshop 4 
+
 close all
 clc
 tic
@@ -64,7 +66,7 @@ end
 
 tau_id = sym(zeros(n,nn));
 
-for mm = 1:nn
+for mm = 1:10
 %for mm = 1:10 si pas réussi a faire l'optimisation
 mm
 th(1) = q_sub(1,mm);
@@ -101,18 +103,18 @@ end
 end
 
 for i = 1 : n
-Jgi(:,:,i) = vpa(Jvi(:,:,i) - Ri(:,:,i) * rcm_skew(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i));
+Jgi(:,:,i) = Jvi(:,:,i) - Ri(:,:,i) * rcm_skew(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i);
 end
-
-%M = vpa(m(1) * (Jgi(:,:,1))' * Jgi(:,:,1) + (Jwi(:,:,1))' * Ri(:,:,1) * Ig(:,:,1) * (Ri(:,:,1))' * Jwi(:,:,1));
-%for k = 2 : n
-%M = vpa(M + m(k) * (Jgi(:,:,k))' * Jgi(:,:,k) + (Jwi(:,:,k))' * Ri(:,:,k) * Ig(:,:,k) * (Ri(:,:,k))' *Jwi(:,:,k));
-%end
 
 M = m(1) * (Jgi(:,:,1))' * Jgi(:,:,1) + (Jwi(:,:,1))' * Ri(:,:,1) * Ig(:,:,1) * (Ri(:,:,1))' * Jwi(:,:,1);
 for k = 2 : n
-M = M + m(k) * (Jgi(:,:,k))' * Jgi(:,:,k) + (Jwi(:,:,k))' * Ri(:,:,k) * Ig(:,:,k) * (Ri(:,:,k))' * Jwi(:,:,k);
+M = M + m(k) * (Jgi(:,:,k))' * Jgi(:,:,k) + (Jwi(:,:,k))' * Ri(:,:,k) * Ig(:,:,k) * (Ri(:,:,k))' *Jwi(:,:,k);
 end
+
+%M = m(1) * (Jgi(:,:,1))' * Jgi(:,:,1) + (Jwi(:,:,1))' * Ri(:,:,1) * Ig(:,:,1) * (Ri(:,:,1))' * Jwi(:,:,1);
+%for k = 2 : n
+%M = M + m(k) * (Jgi(:,:,k))' * Jgi(:,:,k) + (Jwi(:,:,k))' * Ri(:,:,k) * Ig(:,:,k) * (Ri(:,:,k))' * Jwi(:,:,k);
+%end
 
 
 %p.23-24
@@ -164,19 +166,19 @@ dtij(:,i,j) = dTij(1:3,4,i,j);
 end
 end
 
-%for j = 1 : n
-%G(j,1) = vpa(m(1) * V_g' * (dtij(:,1,j) + dRij(:,:,1,j) * rcm(:,1)));
-%for i = 2 : n
-%G(j,1) = vpa(G(j,1) + m(i) * V_g' * (dtij(:,i,j) + dRij(:,:,i,j) * rcm(:,i)));
-%end
-%end
-
 for j = 1 : n
 G(j,1) = m(1) * V_g' * (dtij(:,1,j) + dRij(:,:,1,j) * rcm(:,1));
 for i = 2 : n
 G(j,1) = G(j,1) + m(i) * V_g' * (dtij(:,i,j) + dRij(:,:,i,j) * rcm(:,i));
 end
 end
+
+%for j = 1 : n
+%G(j,1) = m(1) * V_g' * (dtij(:,1,j) + dRij(:,:,1,j) * rcm(:,1));
+%for i = 2 : n
+%G(j,1) = G(j,1) + m(i) * V_g' * (dtij(:,i,j) + dRij(:,:,i,j) * rcm(:,i));
+%end
+%end
 
 for i = 1 : n
 for k = 1 : i
@@ -191,23 +193,23 @@ end
 
 for i = 1 : n
 for j = 1 : n
-%dJgi(:,:,i,j) = vpa(dJvi(:,:,i,j) - dRij(:,:,i,j) * rcm_skew(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i) - Ri(:,:,i) * rcm_skew(:,:,i) * (dRij(:,:,i,j))' * Jwi(:,:,i) - Ri(:,:,i) * rcm_skew(:,:,i) * (Ri(:,:,i))' * dJwi(:,:,i,j));
 dJgi(:,:,i,j) = dJvi(:,:,i,j) - dRij(:,:,i,j) * rcm_skew(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i) - Ri(:,:,i) * rcm_skew(:,:,i) * (dRij(:,:,i,j))' * Jwi(:,:,i) - Ri(:,:,i) * rcm_skew(:,:,i) * (Ri(:,:,i))' * dJwi(:,:,i,j);
+%dJgi(:,:,i,j) = dJvi(:,:,i,j) - dRij(:,:,i,j) * rcm_skew(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i) - Ri(:,:,i) * rcm_skew(:,:,i) * (dRij(:,:,i,j))' * Jwi(:,:,i) - Ri(:,:,i) * rcm_skew(:,:,i) * (Ri(:,:,i))' * dJwi(:,:,i,j);
 end
 end
 
 
 for j = 1 : n
     % Initialisation avec le premier corps (i=1) - Page 31
-    dMj(:,:,j) = vpa(m(1) * ( (dJgi(:,:,1,j))' * Jgi(:,:,1) + (Jgi(:,:,1))' * dJgi(:,:,1,j) ) + ...
+    dMj(:,:,j) = m(1) * ( (dJgi(:,:,1,j))' * Jgi(:,:,1) + (Jgi(:,:,1))' * dJgi(:,:,1,j) ) + ...
                  (dJwi(:,:,1,j))' * Ri(:,:,1) * Ig(:,:,1) * (Ri(:,:,1))' * Jwi(:,:,1) + ...
                  (Jwi(:,:,1))' * dRij(:,:,1,j) * Ig(:,:,1) * (Ri(:,:,1))'* Jwi(:,:,1) + ...
                  (Jwi(:,:,1))' * Ri(:,:,1) * Ig(:,:,1) * (dRij(:,:,1,j))' * Jwi(:,:,1) + ...
-                 (Jwi(:,:,1))' * Ri(:,:,1) * Ig(:,:,1) * (Ri(:,:,1))' * dJwi(:,:,1,j));
+                 (Jwi(:,:,1))' * Ri(:,:,1) * Ig(:,:,1) * (Ri(:,:,1))' * dJwi(:,:,1,j);
     
     % Sommation pour les corps suivants (i=2 à n) - Page 32
     for i = 2 : n
-        dMj(:,:,j) = vpa(dMj(:,:,j) + m(i) * ( (dJgi(:,:,i,j))' * Jgi(:,:,i) + (Jgi(:,:,i))' * dJgi(:,:,i,j) ) + ...
+        dMj(:,:,j) = (dMj(:,:,j) + m(i) * ( (dJgi(:,:,i,j))' * Jgi(:,:,i) + (Jgi(:,:,i))' * dJgi(:,:,i,j) ) + ...
                      (dJwi(:,:,i,j))' * Ri(:,:,i) * Ig(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i) + ...
                      (Jwi(:,:,i))' * dRij(:,:,i,j) * Ig(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i) + ...
                      (Jwi(:,:,i))' * Ri(:,:,i) * Ig(:,:,i) * (dRij(:,:,i,j))' * Jwi(:,:,i) + ...
@@ -215,23 +217,23 @@ for j = 1 : n
     end
 end 
 
-%Mp = (vpa(dMj(:,:,1) * qp(1)));
-Mp = dMj(:,:,1) * qp(1);
+Mp = ((dMj(:,:,1) * qp(1)));
+%Mp = dMj(:,:,1) * qp(1);
 for j = 2 : n
-    %Mp = vpa(Mp + dMj(:,:,j) * qp(j));
-    Mp = Mp + dMj(:,:,j) * qp(j);
+    Mp = (Mp + dMj(:,:,j) * qp(j));
+    %Mp = Mp + dMj(:,:,j) * qp(j);
 end
 
 
 for j = 1 : n
-%N2(j,:) = vpa(qp' * dMj(:,:,j));
-N2(j,:) = qp' * dMj(:,:,j);
+N2(j,:) = (qp' * dMj(:,:,j));
+%N2(j,:) = qp' * dMj(:,:,j);
 end
-%N = vpa(Mp - 1/2 * N2);
-N = Mp - 1/2 * N2;
+N = (Mp - 1/2 * N2);
+%N = Mp - 1/2 * N2;
 
 
-%tau_id(:,mm) = simplify(vpa(M * qpp + N * qp + G - Fv .* qp - Fc .* sign(qp)));
+%tau_id(:,mm) = simplify((M * qpp + N * qp + G - Fv .* qp - Fc .* sign(qp)));
 tau_id(:,mm) = simplify(vpa(M * qpp + N * qp + G - Fv .* qp - Fc .* sign(qp)));
 end
 

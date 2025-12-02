@@ -2,7 +2,7 @@ clear
 close all
 clc
 
-%% === 1. INITIALISATION ===
+
 n = 4;
 d = [ 0 ; 0.22 ; 0.24 ; 0 ];
 alph = [ 0 ; 0 ; 0 ; 0 ];
@@ -33,8 +33,7 @@ end
 Fc = sym("Fc",[ n 1 ],'real');
 Fv = sym("Fv",[ n 1 ],'real');
 
-%% === 2. CHARGEMENT ===
-load q.mat
+load Data-20251124/q.mat
 load qf.mat 
 load dqf.mat 
 load ddqf.mat
@@ -42,7 +41,6 @@ load tauf.mat
 
 nn = floor((length(t)-1)/380); 
 
-% Reconstruction des variables comme dans le Main du prof
 for k = 1 : nn
     tt(1,k) = t(1,(k-1)*350+1);
     q(:,k) = qf(:,(k-1)*350+1);
@@ -56,7 +54,6 @@ Tau_id = sym(zeros(n,nn)); % Initialisation (qui sera inutile à cause de l'écr
 tic
 fprintf('Calcul en cours...\n');
 
-%% === 3. BOUCLE (Comportement strict du prof) ===
 for mm = 1 : 4
     if mod(mm, 10) == 0, disp(mm); end
 
@@ -69,7 +66,6 @@ for mm = 1 : 4
     qpp = ddq(:,mm);
 
     for k = 1 : n
-        % Utilisation de q(k) comme le prof (fige l'angle à t=0 pour k=1,2,4, erreur potentielle mais fidèle au code)
         T(:,:,k) = T_Matrix_Internal(q(k),alph(k),d(k),r(k));
     end
 
@@ -174,12 +170,8 @@ for mm = 1 : 4
     end
   
     N = Mp - 1/2 * N2;
-
-    % === MODIFICATION ICI POUR COLLER AU PROF ===
-    % PAS d'index (:,mm) => On écrase la variable Tau_id à chaque tour.
-    % À la fin, Tau_id sera un vecteur 4x1 (valeur de la dernière itération).
-    Tau_id = simplify(vpa(M * qpp + N * qp + G - Fv .* qp - Fc .* sign(qp)));
-
+    %Tau_id = simplify(vpa(M * qpp + N * qp + G - Fv .* qp - Fc .* sign(qp)));
+    Tau_id(:,mm) = simplify(vpa(M * qpp + N * qp + G - Fv .* qp - Fc .* sign(qp)));
 end
 save Tau_id.mat Tau_id
 save tau_sub_sampled.mat tau_sub_sampled

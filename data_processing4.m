@@ -2,11 +2,10 @@ clear
 close all 
 clc
 
-%% Chargement des données
-load('Data-20251124/q.mat');    % contient q_meas, t
+load('Data-20251124/q.mat');   
 load('Data-20251124/tau.mat');  % contient Tau
 
-%% On ne garde que les 4 premiers DOF
+
 q4   = q_meas(1:4, :);   % positions des 4 premiers axes
 Tau4 = Tau(1:4, :);      % couples des 4 premiers axes
 
@@ -14,9 +13,9 @@ Tau4 = Tau(1:4, :);      % couples des 4 premiers axes
 % Joints 1, 2 et 4 : degrés -> radians
 % Joint 3 : millimètres -> mètres
 
-q_conv = q4;                                % copie de travail
+q_conv = q4;                            
 
-q_conv([1 2 4], :) = deg2rad(q4([1 2 4], :));  % 1,2,4 en rad
+q_conv([1 2 4], :) = deg2rad(q4([1 2 4], :));  %
 q_conv(3, :)       = q4(3, :) / 1000;          % 3 en m
 
 %% Paramètres du filtre passe-bas
@@ -34,10 +33,9 @@ dqf  = zeros(n_joints, n_samples);
 ddqf = zeros(n_joints, n_samples);
 tauf = zeros(n_joints, n_samples);
 
-%% Traitement ligne par ligne (même logique que ton code)
 for i = 1:n_joints
     
-    % Filtrage de la position (déjà convertie en bonnes unités)
+    % Filtrage de la position 
     qf(i, :) = filtfilt(b, a, q_conv(i, :));
     
     % Filtrage des couples
@@ -57,14 +55,14 @@ for i = 1:n_joints
     
 end
 
-%% Sauvegarde
+
 save("q_conv.mat", "q_conv");   % q après conversion d'unités
 save("qf.mat",     "qf");
 save("dqf.mat",    "dqf");
 save("ddqf.mat",   "ddqf");
 save("tauf.mat",   "tauf");
 
-%% Dérivée numérique (exactement ta version)
+
 function df = derive(t, f)
     df = [ ...
         f(1,2) - f(1,1), ...
