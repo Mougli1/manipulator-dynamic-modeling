@@ -17,6 +17,7 @@ Fv = sym("Fv",[ n 1 ],'real');
 
 load tau_id.mat;
 load tau_sub.mat; 
+
 [ row , col ] = size(tau_sub);
 tau_id_conca = sym(zeros(row*col,1));
 for k = 1 : col
@@ -91,7 +92,7 @@ pb(k) = simplify(sum(coeffsExpr .* unknown));
 end
 %%
 
-fun = @(x)( sqrt( (Y_real - D_real * x)' * (Y_real - D_real * x) ) );
-x0 = zeros ( length(p),1);
+fun = @(x)(sqrt((Y_real - Db * x)' * (Y_real - Db * x)));
+x0 = zeros(length(pb),1);
 options = optimoptions('fmincon', 'MaxFunctionEvaluations', 1e5);
 sol = fmincon(fun, x0, [], [], [], [], [], [], [], options);

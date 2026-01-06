@@ -1,8 +1,10 @@
 %% Code Workshop 4 -- TSO Célia et MERBOUCHE Mouloud %%
 close all
+clear
 clc
 tic
-digits(4);
+%digits(4)
+digits(32);
 n = 4;
 %% Paramètres MDH calculés
 type = [1;1;0;1];
@@ -74,7 +76,7 @@ end
 tau_id = sym(zeros(n,nn));
 
 for mm = 1:nn %calcul du modèle dynamique 
-%for mm = 1:10 si pas réussi a faire l'optimisation
+%for mm = 1:10 pour tester 
 mm
 th(1) = q_sub(1,mm);
 th(2) = q_sub(2,mm);
@@ -241,6 +243,7 @@ N = (Mp - 1/2 * N2);
 
 
 %tau_id(:,mm) = simplify((M * qpp + N * qp + G - Fv .* qp - Fc .* sign(qp)));
+
 tau_id(:,mm) = simplify(vpa(M * qpp + N * qp + G - Fv .* qp - Fc .* sign(qp)));
 end
 
