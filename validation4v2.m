@@ -1,11 +1,14 @@
-%% Script 4: Validation  — TSO Célia & MERBOUCHE Mouloud
-%% mettre clear ... ???
-load('validation.mat');
+% validation.m — Workshop 4 DOF - TSO Célia & MERBOUCHE Mouloud
+
+clear; close all; clc
+digits(4);  
+
+load('sol.mat','sol'); 
+load('validation.mat');  
 
 q4   = q_meas_validation(1:4, :);
 Tau4 = tau_meas_validation(1:4, :);
 
-% 2) Traitementdata
 q_conv = q4;
 q_conv([1 2 4], :) = deg2rad(q4([1 2 4], :));
 q_conv(3, :)       = q4(3, :) / 1000;
@@ -26,31 +29,31 @@ for i = 1:n_joints
     qf(i, :)   = filtfilt(b, a, q_conv(i, :));
     tauf(i, :) = filtfilt(b, a, Tau4(i, :));
 
-    dq_raw   = derive(t, qf(i, :));
-    dqf(i,:) = filtfilt(b, a, dq_raw);
+    dq_raw     = derive(t, qf(i, :));
+    dqf(i, :)  = filtfilt(b, a, dq_raw);
 
-    ddq_raw   = derive(t, dqf(i, :));
-    ddqf(i,:) = filtfilt(b, a, ddq_raw);
+    ddq_raw    = derive(t, dqf(i, :));
+    ddqf(i, :) = filtfilt(b, a, ddq_raw);
 end
 
-%% 3) Calcul du modèle dynamique avec le dataset de validation (exactement comme Script 2)
 n = 4;
 
 type = [1;1;0;1];
 d    = [ 0 ; 0.22 ; 0.24 ; 0 ];
-alph = [ 0 ; 0 ; 0 ; 0 ] ;
-r    = [ 0 ; 0 ; 0 ; 0 ] ;
-th   = [ 0 ; 0 ; 0 ; 0 ] ;
+alph = [ 0 ; 0 ; 0 ; 0 ];
+r    = [ 0 ; 0 ; 0 ; 0 ];
+th   = [ 0 ; 0 ; 0 ; 0 ];
 
-V_g = [ 0 ; 0 ; 9.81 ] ;
+V_g = [ 0 ; 0 ; 9.81 ];
 
-m  = sym("m",[ n 1 ],'real') ;
-xx = sym("xx",[ n 1 ],'real') ;
-yy = sym("yy",[ n 1 ],'real') ;
-zz = sym("zz",[ n 1 ],'real') ;
-xy = sym("xy",[ n 1 ],'real') ;
-xz = sym("xz",[ n 1 ],'real') ;
-yz = sym("yz",[ n 1 ],'real') ;
+m  = sym("m",[ n 1 ],'real');
+
+xx = sym("xx",[ n 1 ],'real');
+yy = sym("yy",[ n 1 ],'real');
+zz = sym("zz",[ n 1 ],'real');
+xy = sym("xy",[ n 1 ],'real');
+xz = sym("xz",[ n 1 ],'real');
+yz = sym("yz",[ n 1 ],'real');
 
 for k = 1 : n
     Ig(:,:,k) = [ xx(k) xy(k) xz(k) ;
@@ -58,22 +61,19 @@ for k = 1 : n
                   xz(k) yz(k) zz(k) ];
 end
 
-x = sym("x",[ n 1 ],'real') ;
-y = sym("y",[ n 1 ],'real') ;
-z = sym("z",[ n 1 ],'real') ;
+x = sym("x",[ n 1 ],'real');
+y = sym("y",[ n 1 ],'real');
+z = sym("z",[ n 1 ],'real');
 
 for k = 1:n
     rcm(:, k) = [x(k); y(k); z(k)];
-end
-
-for k = 1:n
     rcm_skew(:,:,k) = skew(rcm(:, k));
 end
 
 Fc = sym('Fc', [n 1], 'real');
 Fv = sym('Fv', [n 1], 'real');
 
-%% Sous-échantillonnage (exactement comme Script 2)
+%% Sous-échantillonnage
 nn = (length(t)-1)/380;
 
 t_sub   = zeros(1, nn);
@@ -83,11 +83,12 @@ ddq_sub = zeros(n, nn);
 tau_sub = zeros(n, nn);
 
 for k = 1 : nn
-    t_sub(1,k)    = t(1,(k-1)*380+1);
-    q_sub(:,k)    = qf(:,(k-1)*380+1);
-    dq_sub(:,k)   = dqf(:,(k-1)*380+1);
-    ddq_sub(:,k)  = ddqf(:,(k-1)*380+1);
-    tau_sub(:,k)  = tauf(:,(k-1)*380+1);
+    idx = (k-1)*380 + 1;
+    t_sub(1,k)    = t(1,idx);
+    q_sub(:,k)    = qf(:,idx);
+    dq_sub(:,k)   = dqf(:,idx);
+    ddq_sub(:,k)  = ddqf(:,idx);
+    tau_sub(:,k)  = tauf(:,idx);
 end
 
 tau_id = sym(zeros(n,nn));
@@ -104,8 +105,8 @@ for mm = 1:nn
 
     for k = 1:n
         T(:,:,k) = [ cos(th(k))               , - sin(th(k))              , 0             , d(k) ;
-                     cos(alph(k)) * sin(th(k)) , cos(alph(k)) * cos(th(k)) , -sin(alph(k)) , - r(k) * sin(alph(k)) ;
-                     sin(alph(k)) * sin(th(k)) , sin(alph(k)) * cos(th(k)) , cos(alph(k))  , r(k) * cos(alph(k)) ;
+                     cos(alph(k)) * sin(th(k)),   cos(alph(k)) * cos(th(k)), -sin(alph(k)), - r(k) * sin(alph(k)) ;
+                     sin(alph(k)) * sin(th(k)),   sin(alph(k)) * cos(th(k)),  cos(alph(k)),   r(k) * cos(alph(k)) ;
                      0                         , 0                         , 0             , 1 ];
     end
 
@@ -114,15 +115,15 @@ for mm = 1:nn
         Ti(:,:,k) = Ti(:,:,k-1) * T(:,:,k);
     end
 
-    zi(:,1:n)    = Ti(1:3,3,1:n);
-    ti(:,1:n)    = Ti(1:3,4,1:n);
-    Ri(:,:,1:n)  = Ti(1:3,1:3,1:n);
+    zi(:,1:n)   = Ti(1:3,3,1:n);
+    ti(:,1:n)   = Ti(1:3,4,1:n);
+    Ri(:,:,1:n) = Ti(1:3,1:3,1:n);
 
     for i = 1 : n
         for k = 1 : i
-            li(:,k,i)   = ti(:,i) - ti(:,k);
-            Jvi(:,k,i)  = cross(zi(:,k) , li(:,k,i));
-            Jwi(:,k,i)  = zi(:,k);
+            li(:,k,i)  = ti(:,i) - ti(:,k);
+            Jvi(:,k,i) = cross(zi(:,k), li(:,k,i));
+            Jwi(:,k,i) = zi(:,k);
         end
     end
 
@@ -138,13 +139,13 @@ for mm = 1:nn
     for k = 1 : n
         if type(k) == 1
             dT(:,:,k) = [ - sin(th(k)) , - cos(th(k)) , 0 , 0 ;
-                           cos(alph(k)) * cos(th(k)) , - cos(alph(k)) * sin(th(k)) , 0 , 0 ;
-                           sin(alph(k)) * cos(th(k)) , - sin(alph(k)) * sin(th(k)) , 0 , 0 ;
+                           cos(alph(k))*cos(th(k)) , -cos(alph(k))*sin(th(k)) , 0 , 0 ;
+                           sin(alph(k))*cos(th(k)) , -sin(alph(k))*sin(th(k)) , 0 , 0 ;
                            0 , 0 , 0 , 1 ];
-        elseif type(k) == 0
+        else
             dT(:,:,k) = [ 0 , 0 , 0 , 0 ;
                           0 , 0 , 0 , - sin(alph(k)) ;
-                          0 , 0 , 0 , cos(alph(k)) ;
+                          0 , 0 , 0 ,   cos(alph(k)) ;
                           0 , 0 , 0 , 1 ];
         end
     end
@@ -160,17 +161,13 @@ for mm = 1:nn
                     dTij(:,:,i,j) = Ti(:,:,j-1) * dT(:,:,j);
                 end
             else
+                Tij = eye(4);
+                for k = j + 1 : i
+                    Tij = Tij * Ti(:,:,k);
+                end
                 if j == 1
-                    Tij = eye(4);
-                    for k = j + 1 : i
-                        Tij = Tij * Ti(:,:,k);
-                    end
                     dTij(:,:,i,j) = dT(:,:,j) * Tij;
                 else
-                    Tij = eye(4);
-                    for k = j + 1 : i
-                        Tij = Tij * Ti(:,:,k);
-                    end
                     dTij(:,:,i,j) = Ti(:,:,j-1) * dT(:,:,j) * Tij;
                 end
             end
@@ -191,18 +188,19 @@ for mm = 1:nn
     for i = 1 : n
         for k = 1 : i
             for j = 1 : n
-                dlij(:,k,i,j)  = dtij(:,i,j) - dtij(:,k,j);
-                dJvi(:,k,i,j)  = cross(dzij(:,k,j),li(:,k,i)) + cross(zi(:,k),dlij(:,k,i,j));
-                dJwi(:,k,i,j)  = dzij(:,k,j);
+                dlij(:,k,i,j) = dtij(:,i,j) - dtij(:,k,j);
+                dJvi(:,k,i,j) = cross(dzij(:,k,j), li(:,k,i)) + cross(zi(:,k), dlij(:,k,i,j));
+                dJwi(:,k,i,j) = dzij(:,k,j);
             end
         end
     end
 
     for i = 1 : n
         for j = 1 : n
-            dJgi(:,:,i,j) = dJvi(:,:,i,j) - dRij(:,:,i,j) * rcm_skew(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i) ...
-                           - Ri(:,:,i) * rcm_skew(:,:,i) * (dRij(:,:,i,j))' * Jwi(:,:,i) ...
-                           - Ri(:,:,i) * rcm_skew(:,:,i) * (Ri(:,:,i))' * dJwi(:,:,i,j);
+            dJgi(:,:,i,j) = dJvi(:,:,i,j) ...
+                          - dRij(:,:,i,j) * rcm_skew(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i) ...
+                          - Ri(:,:,i) * rcm_skew(:,:,i) * (dRij(:,:,i,j))' * Jwi(:,:,i) ...
+                          - Ri(:,:,i) * rcm_skew(:,:,i) * (Ri(:,:,i))' * dJwi(:,:,i,j);
         end
     end
 
@@ -214,37 +212,38 @@ for mm = 1:nn
                     (Jwi(:,:,1))' * Ri(:,:,1) * Ig(:,:,1) * (Ri(:,:,1))' * dJwi(:,:,1,j);
 
         for i = 2 : n
-            dMj(:,:,j) = (dMj(:,:,j) + m(i) * ( (dJgi(:,:,i,j))' * Jgi(:,:,i) + (Jgi(:,:,i))' * dJgi(:,:,i,j) ) + ...
-                         (dJwi(:,:,i,j))' * Ri(:,:,i) * Ig(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i) + ...
-                         (Jwi(:,:,i))' * dRij(:,:,i,j) * Ig(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i) + ...
-                         (Jwi(:,:,i))' * Ri(:,:,i) * Ig(:,:,i) * (dRij(:,:,i,j))' * Jwi(:,:,i) + ...
-                         (Jwi(:,:,i))' * Ri(:,:,i) * Ig(:,:,i) * (Ri(:,:,i))' * dJwi(:,:,i,j));
+            dMj(:,:,j) = dMj(:,:,j) + m(i) * ( (dJgi(:,:,i,j))' * Jgi(:,:,i) + (Jgi(:,:,i))' * dJgi(:,:,i,j) ) + ...
+                        (dJwi(:,:,i,j))' * Ri(:,:,i) * Ig(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i) + ...
+                        (Jwi(:,:,i))' * dRij(:,:,i,j) * Ig(:,:,i) * (Ri(:,:,i))' * Jwi(:,:,i) + ...
+                        (Jwi(:,:,i))' * Ri(:,:,i) * Ig(:,:,i) * (dRij(:,:,i,j))' * Jwi(:,:,i) + ...
+                        (Jwi(:,:,i))' * Ri(:,:,i) * Ig(:,:,i) * (Ri(:,:,i))' * dJwi(:,:,i,j);
         end
     end
 
-    Mp = (dMj(:,:,1) * qp(1));
+    Mp = dMj(:,:,1) * qp(1);
     for j = 2 : n
-        Mp = (Mp + dMj(:,:,j) * qp(j));
+        Mp = Mp + dMj(:,:,j) * qp(j);
     end
 
     for j = 1 : n
-        N2(j,:) = (qp' * dMj(:,:,j));
+        N2(j,:) = qp' * dMj(:,:,j);
     end
-    N = (Mp - 1/2 * N2);
+    N = Mp - 1/2 * N2;
 
     tau_id(:,mm) = simplify(vpa(M * qpp + N * qp + G - Fv .* qp - Fc .* sign(qp)));
 end
 
-%% 4) Construction de Db_val avec la structure figée (idx_ind, p) + calcul tau_c
-[ row , col ] = size(tau_sub);
+%% ========== 4) Identification_model sur Validation (comme script 3) ==========
+[row, col] = size(tau_sub);
 
 tau_id_conca  = sym(zeros(row*col,1));
 tau_sub_conca = zeros(row*col,1);
 
-for k = 1 : col
-    tau_sub_conca(row*(k-1)+1:row*(k-1)+row,1) = tau_sub(:,k);
-    tau_id_conca(row*(k-1)+1:row*(k-1)+row,1)  = tau_id(:,k);
+for k = 1:col
+    tau_sub_conca(row*(k-1)+1:row*k,1) = tau_sub(:,k);
+    tau_id_conca(row*(k-1)+1:row*k,1)  = tau_id(:,k);
 end
+
 
 mx    = sym("mx",[ n 1 ],'real');
 my    = sym("my",[ n 1 ],'real');
@@ -256,46 +255,57 @@ mx_sq = sym("mx_sq",[ n 1 ],'real');
 my_sq = sym("my_sq",[ n 1 ],'real');
 mz_sq = sym("mz_sq",[ n 1 ],'real');
 
-old = [ m .* x .* y ; m .* y .* z ; m .* x .* z ; m .* x.* x ; m .* y .* y ; m .* z .* z ; m .* x ; m .* y ; m.* z ];
+old = [ m .* x .* y ; m .* y .* z ; m .* x .* z ; m .* x .* x ; m .* y .* y ; m .* z .* z ; m .* x ; m .* y ; m .* z ];
 new = [ mxy ; myz ; mxz ; mx_sq ; my_sq ; mz_sq ; mx ; my ; mz ];
 
 tau_id_conca_new = subs(tau_id_conca, old, new);
 eqns = tau_id_conca_new == tau_sub_conca;
 
-[D_val, ~] = equationsToMatrix(eqns, p);
-D_real_val = round(double(D_val), 5);
+p = sym(zeros(18*n,1));
+for k = 1:n
+    p(18*(k-1)+1:18*k,1) = [ m(k) ; xx(k) ; yy(k) ; zz(k) ; xy(k) ; xz(k) ; yz(k) ; Fc(k) ; Fv(k) ; ...
+                            mx(k) ; my(k) ; mz(k) ; mx_sq(k) ; my_sq(k) ; mz_sq(k) ; mxy(k) ; mxz(k) ; myz(k) ];
+end
 
-Db_val      = D_real_val(:, idx_ind);
-tau_c_conca = Db_val * sol;
+[D, ~]  = equationsToMatrix(eqns, p);
+D_real  = round(double(D), 5);
 
+cols_with_all_zeros = find(all(D_real == 0));
+p(cols_with_all_zeros) = [];
+D_real(:, all(D_real == 0)) = [];
+
+rnk = rank(D_real);
+[~, R, E] = qr(D_real, 'vector');
+idx_ind = E(1:rnk);
+Db_val  = D_real(:, idx_ind);
+
+
+tau_c_conca = Db_val * sol;         
 tau_c = zeros(n, nn);
 for k = 1 : nn
     tau_c(:, k) = tau_c_conca(n*(k-1)+1 : n*(k-1)+n, 1);
 end
-
-%% tracer les plots 
-figure('Name', 'Validation');
-for i = 1:n
-    subplot(2, 2, i);
-    plot(t_sub, tau_sub(i, :), 'b', 'LineWidth', 1.5); hold on;
-    plot(t_sub, tau_c(i, :),   'r--', 'LineWidth', 1.5);
-    xlabel('Temps');
-    ylabel('');
-    legend('Mesuré', 'Estimé');
-    title(['Joint ' num2str(i)]);
-    grid on;
+figure('Name','Validation mesuré vs filtré');
+for j = 1:n
+    subplot(2,2,j);
+    plot(t_sub, tau_sub(j,:), 'LineWidth', 1.2); hold on
+    plot(t_sub, tau_c(j,:),   'LineWidth', 1.2);
+    grid on
+    xlabel('tps (s)');
+    ylabel('Torque');
+    title(['Joint ', num2str(j)]);
+    legend('Measuré', 'Calculé', 'Location','best');
 end
 
-%%%%% functions %%%%%
+%% ===== functions =====
 function df = derive(t, f)
     df = [ f(1,2) - f(1,1), ...
-        (f(1,3:end) - f(1,1:end-2)) / 2, ...
-        f(1,end) - f(1,end-1) ...
-        ] / (t(1,2) - t(1,1));
+           (f(1,3:end) - f(1,1:end-2)) / 2, ...
+           f(1,end) - f(1,end-1) ] / (t(1,2) - t(1,1));
 end
 
 function S = skew(v)
     S = [  0   -v(3)  v(2);
           v(3)   0   -v(1);
-         -v(2)  v(1)    0  ];
+         -v(2)  v(1)   0 ];
 end

@@ -5,7 +5,7 @@ load('validation.mat');
 q4   = q_meas_validation(1:4, :);
 Tau4 = tau_meas_validation(1:4, :);
 
-% 2) Traitementdata
+% 2) Trtaitementdata
 q_conv = q4;
 q_conv([1 2 4], :) = deg2rad(q4([1 2 4], :));
 q_conv(3, :)       = q4(3, :) / 1000;
@@ -299,3 +299,9 @@ function S = skew(v)
           v(3)   0   -v(1);
          -v(2)  v(1)    0  ];
 end
+% Deux choix possibles pr la validation :
+% - choix 1 : remettre clc, clear, close et save juste sol.mat puis refaire tout la partie processing +dynamique+ identification
+% complète avec QR (les colonnes linéairement dépendant sont normalement les mêmes pr la et obtenir le nouvel Dbval et multiplier par sol obtenu sur le
+% dataset de base 
+%
+% - choix 2 (actuel) : 

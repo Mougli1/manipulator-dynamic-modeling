@@ -96,3 +96,4 @@ fun = @(x)(sqrt((Y_real - Db * x)' * (Y_real - Db * x)));
 x0 = zeros(length(pb),1);
 options = optimoptions('fmincon', 'MaxFunctionEvaluations', 1e5);
 sol = fmincon(fun, x0, [], [], [], [], [], [], [], options);
+save('sol.mat','sol');
