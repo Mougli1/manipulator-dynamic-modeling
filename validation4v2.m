@@ -6,9 +6,13 @@ digits(4);
 load('sol.mat','sol'); 
 load('validation.mat');  
 
-q4   = q_meas_validation(1:4, :);
-Tau4 = tau_meas_validation(1:4, :);
+q4 = q_meas_validation(1:4, :);
 
+I4 = tau_meas_validation(1:4, :);    
+Kc = [0.38; 0.38; 0.22; 0.21];        
+Gr = [120; 160; 120; 100];             
+
+Tau4 = (Kc .* Gr) .* I4;             
 q_conv = q4;
 q_conv([1 2 4], :) = deg2rad(q4([1 2 4], :));
 q_conv(3, :)       = q4(3, :) / 1000;

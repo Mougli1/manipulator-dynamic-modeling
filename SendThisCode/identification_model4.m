@@ -97,3 +97,4 @@ x0 = zeros(length(pb),1);
 options = optimoptions('fmincon', 'MaxFunctionEvaluations', 1e5);
 sol = fmincon(fun, x0, [], [], [], [], [], [], [], options);
 save('sol.mat','sol');
+save('id_struct.mat','idx_ind','p','cols_with_all_zeros');

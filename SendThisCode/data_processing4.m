@@ -56,6 +56,60 @@ save("dqf.mat",    "dqf");
 save("ddqf.mat",   "ddqf");
 save("tauf.mat",   "tauf");
 
+%% Affichage (brut vs filtré) — Data processing
+% On compare :
+% - Position : q_conv (brut converti) vs qf (filtré)
+% - Couple/force : Tau4 (brut) vs tauf (filtré)
+% - Vitesse/accélération : dérivées numériques du brut vs dqf / ddqf
+
+dq_raw_unf  = zeros(n_joints, n_samples);
+ddq_raw_unf = zeros(n_joints, n_samples);
+
+for jj = 1:n_joints
+    dq_raw_unf(jj, :)  = derive(t, q_conv(jj, :));
+    ddq_raw_unf(jj, :) = derive(t, dq_raw_unf(jj, :));
+end
+
+for jj = 1:n_joints
+    
+    if jj == 3
+        unit_q   = 'm';
+        unit_dq  = 'm/s';
+        unit_ddq = 'm/s^2';
+    else
+        unit_q   = 'rad';
+        unit_dq  = 'rad/s';
+        unit_ddq = 'rad/s^2';
+    end
+    
+    figure('Name', sprintf('Data processing - Joint %d', jj), 'NumberTitle', 'off');
+    
+    subplot(2,2,1);
+    plot(t, q_conv(jj,:), 'DisplayName', 'q (raw conv.)'); hold on;
+    plot(t, qf(jj,:),     'DisplayName', 'q_f (filtered)');
+    grid on; xlabel('t (s)'); ylabel(sprintf('q_%d (%s)', jj, unit_q));
+    title('Position'); legend('Location','best');
+    
+    subplot(2,2,2);
+    plot(t, dq_raw_unf(jj,:), 'DisplayName', 'dq (raw deriv.)'); hold on;
+    plot(t, dqf(jj,:),        'DisplayName', 'dq_f (filtered)');
+    grid on; xlabel('t (s)'); ylabel(sprintf('dq_%d (%s)', jj, unit_dq));
+    title('Velocity'); legend('Location','best');
+    
+    subplot(2,2,3);
+    plot(t, ddq_raw_unf(jj,:), 'DisplayName', 'ddq (raw deriv.)'); hold on;
+    plot(t, ddqf(jj,:),        'DisplayName', 'ddq_f (filtered)');
+    grid on; xlabel('t (s)'); ylabel(sprintf('ddq_%d (%s)', jj, unit_ddq));
+    title('Acceleration'); legend('Location','best');
+    
+    subplot(2,2,4);
+    plot(t, Tau4(jj,:), 'DisplayName', '\tau (raw)'); hold on;
+    plot(t, tauf(jj,:), 'DisplayName', '\tau_f (filtered)');
+    grid on; xlabel('t (s)'); ylabel(sprintf('\\tau_%d (torque/force)', jj));
+    title('Torque / Force'); legend('Location','best');
+    
+    sgtitle(sprintf('Joint %d — Butterworth fc=%g Hz, fe=%g Hz', jj, fc, fe));
+end
 
 function df = derive(t, f)
     df = [ f(1,2) - f(1,1), ...
