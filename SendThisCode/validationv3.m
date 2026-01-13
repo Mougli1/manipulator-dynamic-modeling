@@ -1,31 +1,23 @@
 %%Standalone mais avec idx etape d'avant
 
-%% validation.m — Workshop 4 DOF - TSO Célia & MERBOUCHE Mouloud (standalone, correct)
-
 clear; close all; clc
 digits(32);
 
-% ===== 0) Charger sol + structure d’identification =====
 load('sol.mat','sol');
-load('id_struct.mat','idx_ind','p');   % idx_ind et p viennent du dataset d’identification
+load('id_struct.mat','idx_ind','p');   
 
-% ===== 1) Charger Validation.mat =====
-load('validation.mat');  % q_meas_validation, tau_meas_validation, t
+load('validation.mat');  
 
 q4 = q_meas_validation(1:4, :);
 
-% --- IMPORTANT: ici tau_meas_validation = COURANTS (selon le prof) ---
-I4 = tau_meas_validation(1:4, :);      % courants moteurs
+I4 = tau_meas_validation(1:4, :);     
 
-Kc = [0.38; 0.38; 0.22; 0.21];         % Nm/A
+Kc = [0.38; 0.38; 0.22; 0.21];        
 Gr = [120; 160; 120; 100];             % gear ratios
 
-% Si jamais I est en mA, décommente:
-% I4 = I4 / 1000;
 
-Tau4 = (Kc .* Gr) .* I4;               % couples équivalents articulations
+Tau4 = (Kc .* Gr) .* I4;            
 
-%% 2) Data processing (comme data_processing)
 q_conv = q4;
 q_conv([1 2 4], :) = deg2rad(q4([1 2 4], :));
 q_conv(3, :)       = q4(3, :) / 1000;
@@ -53,7 +45,6 @@ for i = 1:n_joints
     ddqf(i, :) = filtfilt(b, a, ddq_raw);
 end
 
-%% 3) Modèle dynamique (comme script 2)
 n = 4;
 
 type = [1;1;0;1];
@@ -86,7 +77,6 @@ end
 Fc = sym('Fc', [n 1], 'real');
 Fv = sym('Fv', [n 1], 'real');
 
-%% Sous-échantillonnage (comme script 2)
 nn = (length(t)-1)/380;   % supposé entier dans le dataset
 
 t_sub   = zeros(1, nn);
@@ -277,7 +267,6 @@ for mm = 1:nn
     tau_id(:,mm) = simplify(vpa(M*qpp + N*qp + G - Fv.*qp - Fc.*sign(qp)));
 end
 
-%% 4) Construire Db_val AVEC p et idx_ind de l’identification, puis tau_c
 [row, col] = size(tau_sub);
 
 tau_id_conca  = sym(zeros(row*col,1));

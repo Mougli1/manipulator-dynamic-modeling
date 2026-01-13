@@ -7,7 +7,6 @@ tf = 15;
 dt = 0.001;
 t  = t0:dt:tf;
 
-% desired joint positions vectors
 q1d = (pi/2) * sin(4*pi*t);
 q2d = (pi/4) * sin(6*pi*t);
 q3d = 0.1    * (sin(2*pi*t)).^2;
@@ -53,7 +52,6 @@ for nn = 1:N
     Xd(:,nn) = T40(1:3,4);
 end
 
-% Numerical derivation of Xd(t) -> dXd, ddXd
 dXd  = zeros(size(Xd));
 ddXd = zeros(size(Xd));
 
@@ -63,7 +61,6 @@ for i = 1:3
 end
 
 
-% Plots (qd, dqd, ddqd)
 figure('Name','Desired joint positions qd');
 plot(t, qd'); grid on
 xlabel('t (s)'); ylabel('qd');

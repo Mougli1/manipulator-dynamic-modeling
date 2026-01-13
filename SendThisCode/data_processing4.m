@@ -57,10 +57,6 @@ save("ddqf.mat",   "ddqf");
 save("tauf.mat",   "tauf");
 
 %% Affichage (brut vs filtré) — Data processing
-% On compare :
-% - Position : q_conv (brut converti) vs qf (filtré)
-% - Couple/force : Tau4 (brut) vs tauf (filtré)
-% - Vitesse/accélération : dérivées numériques du brut vs dqf / ddqf
 
 dq_raw_unf  = zeros(n_joints, n_samples);
 ddq_raw_unf = zeros(n_joints, n_samples);
